@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SmartFoxProjectConfig">
+    <option name="inspectionProfileModifiedSet">
+      <set>
+        <option value="AliAccessStaticViaInstance" />
+        <option value="AliAccessToNonThreadSafeStaticFieldFromInstance" />
+        <option value="AliArrayNamingShouldHaveBracket" />
+        <option value="AliControlFlowStatementWithoutBraces" />
+        <option value="AliDeprecation" />
+        <option value="AliEqualsAvoidNull" />
+        <option value="AliLongLiteralsEndingWithLowercaseL" />
+        <option value="AliMissingOverrideAnnotation" />
+        <option value="AliWrapperTypeEquality" />
+        <option value="AlibabaAbstractClassShouldStartWithAbstractNaming" />
+        <option value="AlibabaAbstractMethodOrInterfaceMethodMustUseJavadoc" />
+        <option value="AlibabaAvoidApacheBeanUtilsCopy" />
+        <option value="AlibabaAvoidCommentBehindStatement" />
+        <option value="AlibabaAvoidManuallyCreateThread" />
+        <option value="AlibabaAvoidNewDateGetTime" />
+        <option value="AlibabaAvoidPatternCompileInMethod" />
+        <option value="AlibabaAvoidStartWithDollarAndUnderLineNaming" />
+        <option value="AlibabaAvoidUseTimer" />
+        <option value="AlibabaBooleanPropertyShouldNotStartWithIs" />
+        <option value="AlibabaClassCastExceptionWithSubListToArrayList" />
+        <option value="AlibabaClassCastExceptionWithToArray" />
+        <option value="AlibabaClassMustHaveAuthor" />
+        <option value="AlibabaClassNamingShouldBeCamel" />
+        <option value="AlibabaCommentsMustBeJavadocFormat" />
+        <option value="AlibabaConcurrentExceptionWithModifyOriginSubList" />
+        <option value="AlibabaConstantFieldShouldBeUpperCase" />
+        <option value="AlibabaDontModifyInForeachCircle" />
+        <option value="AlibabaEnumConstantsMustHaveComment" />
+        <option value="AlibabaExceptionClassShouldEndWithException" />
+        <option value="AlibabaLowerCamelCaseVariableNaming" />
+        <option value="AlibabaPackageNaming" />
+        <option value="AlibabaPojoMustOverrideToString" />
+        <option value="AlibabaPojoMustUsePrimitiveField" />
+        <option value="AlibabaPojoNoDefaultValue" />
+        <option value="AlibabaServiceOrDaoClassShouldEndWithImpl" />
+        <option value="AlibabaSwitchStatement" />
+        <option value="AlibabaTestClassShouldEndWithTestNaming" />
+        <option value="AlibabaThreadPoolCreation" />
+        <option value="AlibabaThreadShouldSetName" />
+        <option value="AlibabaUndefineMagicConstant" />
+        <option value="AlibabaUnsupportedExceptionWithModifyAsList" />
+        <option value="AlibabaUseQuietReferenceNotation" />
+        <option value="MapOrSetKeyShouldOverrideHashCodeEquals" />
+      </set>
+    </option>
+  </component>
+</project>
