@@ -6,9 +6,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
-import com.alibaba.profiler.manager.AbstractFileChannelWriter;
 import com.alibaba.profiler.queue.FileChannelQueue;
-import com.alibaba.profiler.util.PrintUtil;
+import com.alibaba.profiler.util.LogUtil;
 
 /**
  * @author wxy on 16/6/4.
@@ -54,7 +53,7 @@ public class MMapChannelWriter extends AbstractFileChannelWriter {
                     writeMappedByteBuffer.force();
                 }
             } catch (Exception e) {
-                PrintUtil.error("Writer flush exception. " + e);
+                LogUtil.error("Writer flush exception. " + e);
             } finally {
                 try {
                     Thread.sleep(ASYNC_FLUSH_SECS);
@@ -73,10 +72,10 @@ public class MMapChannelWriter extends AbstractFileChannelWriter {
                 try {
                     asyncFlush();
                 } catch (Throwable t) {
-                    PrintUtil.error("asyncFlush() unhandle exception. " + t);
+                    LogUtil.error("asyncFlush() unhandle exception. " + t);
                 }
 
-                PrintUtil.info("asyncFlush() stopped. ");
+                LogUtil.info("asyncFlush() stopped. ");
             }
         });
     }

@@ -1,7 +1,7 @@
 package com.alibaba.profiler.queue;
 
 import com.alibaba.profiler.exception.FailedException;
-import com.alibaba.profiler.util.PrintUtil;
+import com.alibaba.profiler.util.LogUtil;
 
 /**
  * @author wxy on 16/6/4.
@@ -38,7 +38,7 @@ public abstract class AbstractQueue implements AsyncTask {
         MessageWrapper messageWrapper = get();
         byte[] buff = messageWrapper.getContent();
         if (buff.length <= 0) {
-            PrintUtil.warn("Null message get from the queue.");
+            LogUtil.warn("Null message get from the queue.");
         }
 
         String message;
@@ -47,7 +47,7 @@ public abstract class AbstractQueue implements AsyncTask {
             confirmLastMessage();
             return message;
         } catch (Exception e) {
-            //ÏûÏ¢×ª»»Ê§°Ü£¬¶ªÆú
+            //convert message exception ,abandon it
             confirmLastMessage();
             throw new FailedException("Message type conversion error occurred. ", e);
         }
@@ -57,14 +57,14 @@ public abstract class AbstractQueue implements AsyncTask {
         MessageWrapper messageWrapper = get();
         byte[] buff = messageWrapper.getContent();
         if (buff.length <= 0) {
-            PrintUtil.warn("Null message get from the queue.");
+            LogUtil.warn("Null message get from the queue.");
         }
 
         String message;
         try {
             message = new String(buff, "UTF-8");
         } catch (Exception e) {
-            //ÏûÏ¢×ª»»Ê§°Ü£¬¶ªÆú
+            //ï¿½ï¿½Ï¢×ªï¿½ï¿½Ê§ï¿½Ü£ï¿½ï¿½ï¿½ï¿½ï¿½
             confirmLastMessage();
             throw new FailedException("Message type conversion error occurred. ", e);
         }

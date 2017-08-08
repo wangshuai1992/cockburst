@@ -13,15 +13,14 @@ import com.alibaba.profiler.queue.AsyncTask;
 import com.alibaba.profiler.queue.FileChannelQueue;
 import com.alibaba.profiler.queue.MessageWrapper;
 import com.alibaba.profiler.queue.Meta;
-import com.alibaba.profiler.util.PrintUtil;
+import com.alibaba.profiler.util.LogUtil;
 import com.alibaba.profiler.util.SleepUtil;
 
 /**
- * Created by IntelliJ IDEA.
- * User: caojiadong
- * Date: 13-4-23
- * Time: ÏÂÎç4:56
- * To change this template use File | Settings | File Templates.
+ * Description:read data to cache queue
+ *
+ * @author wxy
+ *         create 2017-05-14 ä¸‹åˆ10:31
  */
 public class FileChannelReader implements AsyncTask {
     private final static int NO_DATA_WAIT_TIMEOUT = 2 * 1000;
@@ -57,7 +56,7 @@ public class FileChannelReader implements AsyncTask {
         String firstFile = dataFileManager.pollFirstFile();
         if (firstFile == null) {
             if (readFile != null) {
-                PrintUtil.error("Meta is " + readFile + ", but data files are not exists.");
+                LogUtil.error("Meta is " + readFile + ", but data files are not exists.");
             }
             readFile = null;
             readPos = 0;
@@ -67,7 +66,7 @@ public class FileChannelReader implements AsyncTask {
             readFile = firstFile;
             readPos = 0;
         } else if (!readFile.equals(firstFile)) {
-            PrintUtil.warn("Meta " + readFile + " is not firstFile " + firstFile);
+            LogUtil.warn("Meta " + readFile + " is not firstFile " + firstFile);
             File f = new File(readFile);
             // If exists, find it.
             if (f.exists() && dataFileManager.findFile(readFile)) {
@@ -83,7 +82,7 @@ public class FileChannelReader implements AsyncTask {
             try {
                 fileChannelQueue.getLatch().await();
             } catch (InterruptedException e) {
-                PrintUtil.error("Latch operation interruptted. " + e);
+                LogUtil.error("Latch operation interruptted. " + e);
                 return;
             }
             switchReadFile();
@@ -109,12 +108,12 @@ public class FileChannelReader implements AsyncTask {
                     readMappedByteBuffer.force();
                     readFileChannel.close();
                 } catch (Exception e) {
-                    PrintUtil.error("SwitchReadFile error. " + e);
+                    LogUtil.error("SwitchReadFile error. " + e);
                 }
             }
             readFile = dataFileManager.pollFirstFile();
             readPos = 0;
-            PrintUtil.info("Switched read file to " + readFile + ". ");
+            LogUtil.info("Switched read file to " + readFile + ". ");
         }
     }
 
@@ -132,9 +131,7 @@ public class FileChannelReader implements AsyncTask {
                 SleepUtil.delay(OPEN_CHANNEL_RETRY_TIMEOUT, i);
             }
         }
-        if (t != null) {
-            throw new RuntimeException("Open read file channel failed.", t);
-        }
+        throw new RuntimeException("Open read file channel failed.", t);
     }
 
     private int getHeader() {
@@ -158,7 +155,7 @@ public class FileChannelReader implements AsyncTask {
             }
             if (length > MESSAGE_HEADER_LENGTH_LIMIT) {
                 while (dataFileManager.isEmpty()) {
-                    PrintUtil.error("Parse message header error, when tail the file. ");
+                    LogUtil.error("Parse message header error, when tail the file. ");
                     SleepUtil.sleep(NO_DATA_WAIT_TIMEOUT);
                 }
                 return;
@@ -174,7 +171,7 @@ public class FileChannelReader implements AsyncTask {
                 return;
             }
             if (leftLength > MESSAGE_HEADER_LENGTH_LIMIT) {
-                PrintUtil.error("Parse message header error, when process time window. ");
+                LogUtil.error("Parse message header error, when process time window. ");
                 return;
             }
             if (!messageBody(leftLength)) {
@@ -186,7 +183,7 @@ public class FileChannelReader implements AsyncTask {
     private boolean messageBody(int length) {
         if (length > MESSAGE_HEADER_LENGTH_LIMIT) {
             readMappedByteBuffer.position(QueueConfig.getInstance().getRotationSize());
-            PrintUtil.error("Parse message header error, set position to the end. ");
+            LogUtil.error("Parse message header error, set position to the end. ");
             return false;
         }
         byte[] content = new byte[length];
@@ -203,7 +200,7 @@ public class FileChannelReader implements AsyncTask {
         try {
             fileChannelQueue.getQueue().put(messageWrapper);
         } catch (InterruptedException e) {
-            PrintUtil.error("Message enqueue failed. " + e);
+            LogUtil.error("Message enqueue failed. " + e);
         }
     }
 
@@ -215,10 +212,10 @@ public class FileChannelReader implements AsyncTask {
                 try {
                     loadMessages();
                 } catch (Throwable t) {
-                    PrintUtil.error("loadMessages() unhandle exception. " + t);
+                    LogUtil.error("loadMessages() can not handle exception. " + t);
                 }
 
-                PrintUtil.info("loadMessages() stopped. ");
+                LogUtil.info("loadMessages() stopped. ");
             }
         });
     }

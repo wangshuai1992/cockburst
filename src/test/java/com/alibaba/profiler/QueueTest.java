@@ -1,6 +1,7 @@
 package com.alibaba.profiler;
 
-import java.io.File;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.alibaba.profiler.exception.FailedException;
 import com.alibaba.profiler.queue.PermanentQueue;
@@ -18,15 +19,32 @@ public class QueueTest {
         if (!dir.exists() && !dir.mkdirs()) {
             throw new RuntimeException("Cannot create meta directory: ");
         }*/
-        for (int i = 0;i<30;i++){
-            try {
-                //PermanentQueue.getInstance().offer("test",String.valueOf("a"+i));
-                System.out.println(PermanentQueue.getInstance().pop("test"));
-            } catch (FailedException e) {
-                e.printStackTrace();
-            }
-        }
+        ExecutorService producersPool = Executors.newFixedThreadPool(10);
+        ExecutorService consumersPool = Executors.newFixedThreadPool(10);
 
+        for (int i = 0; i < 1; i++) {
+            producersPool.submit(new Runnable() {
+                @Override
+                public void run() {
+                    Long start = System.currentTimeMillis();
+                    for (int j = 0; j < 1000000; j++) {
+                        try {
+                            /*PermanentQueue.getInstance().offer("test",
+                                String.valueOf(Thread.currentThread().getName() + "-" + j + ","));
+                            PermanentQueue.getInstance().offer("test1",
+                                String.valueOf(Thread.currentThread() + "-" + j + ","));*/
+                            PermanentQueue.getInstance().offer("test3",
+                                String.valueOf(Thread.currentThread().getName() + "-" + j + ","));
+                           // System.out.println(PermanentQueue.getInstance().pop("test3"));
+                        } catch (FailedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    System.out.println(Thread.currentThread().getName() + " ,1000000 datas write take == " + (
+                        System.currentTimeMillis() - start));
+                }
+            });
+        }
 
     }
 }

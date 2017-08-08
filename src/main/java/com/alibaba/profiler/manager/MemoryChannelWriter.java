@@ -9,7 +9,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 import com.alibaba.profiler.queue.FileChannelQueue;
-import com.alibaba.profiler.util.PrintUtil;
+import com.alibaba.profiler.util.LogUtil;
 
 /**
  * @author wxy on 16/6/4.
@@ -71,7 +71,7 @@ public class MemoryChannelWriter extends AbstractFileChannelWriter {
                         while (it.hasNext()) {
                             appendMessage(it.next());
                         }
-                        PrintUtil.info("Service shutdown, append the remaining message. ");
+                        LogUtil.info("Service shutdown, append the remaining message. ");
                         return;
                     }
                 }
@@ -79,7 +79,7 @@ public class MemoryChannelWriter extends AbstractFileChannelWriter {
                 appendMessage(message);
 
             } catch (Exception e) {
-                PrintUtil.error("writer message exception. " + e);
+                LogUtil.error("writer message exception. " + e);
             }
         }
     }
@@ -91,7 +91,7 @@ public class MemoryChannelWriter extends AbstractFileChannelWriter {
                     writeMappedByteBuffer.force();
                 }
             } catch (Exception e) {
-                PrintUtil.error("Writer flush exception. " + e);
+                LogUtil.error("Writer flush exception. " + e);
             } finally {
                 try {
                     Thread.sleep(ASYNC_FLUSH_SECS);
@@ -110,10 +110,10 @@ public class MemoryChannelWriter extends AbstractFileChannelWriter {
                 try {
                     swap();
                 } catch (Throwable t) {
-                    PrintUtil.error("swap() unhandle exception. " + t);
+                    LogUtil.error("swap() unhandle exception. " + t);
                 }
 
-                PrintUtil.info("swap() stopped. ");
+                LogUtil.info("swap() stopped. ");
             }
         });
 
@@ -123,10 +123,10 @@ public class MemoryChannelWriter extends AbstractFileChannelWriter {
                 try {
                     flush();
                 } catch (Throwable t) {
-                    PrintUtil.error("flush() unhandle exception. " + t);
+                    LogUtil.error("flush() unhandle exception. " + t);
                 }
 
-                PrintUtil.info("flush() stopped. ");
+                LogUtil.info("flush() stopped. ");
             }
         });
     }

@@ -8,7 +8,7 @@ import com.alibaba.profiler.manager.AbstractFileChannelWriter;
 import com.alibaba.profiler.manager.DataFileManager;
 import com.alibaba.profiler.manager.FileChannelReader;
 import com.alibaba.profiler.manager.MetaManager;
-import com.alibaba.profiler.util.PrintUtil;
+import com.alibaba.profiler.util.LogUtil;
 
 /**
  * @author wxy on 16/6/4.
@@ -32,7 +32,7 @@ public class FileChannelQueue extends AbstractQueue {
         this.dataFileManager = new DataFileManager(queueName);
         this.writer = AbstractFileChannelWriter.createWriter(config.getPattern(), this);
         this.reader = new FileChannelReader(this);
-        this.queue = new LinkedBlockingQueue<MessageWrapper>(100000);
+        this.queue = new LinkedBlockingQueue<>(100000);
     }
 
     public String getQueueName() {
@@ -68,7 +68,7 @@ public class FileChannelQueue extends AbstractQueue {
             messageWrapper = queue.take();
             lastMessage = messageWrapper;
         } catch (Exception e) {
-            PrintUtil.warn("Interrupted when take message from FileChannelQueue. " + e);
+            LogUtil.warn("Interrupted when take message from FileChannelQueue. " + e);
         }
         return messageWrapper;
     }

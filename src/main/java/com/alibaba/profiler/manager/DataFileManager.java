@@ -8,7 +8,7 @@ import java.util.NavigableSet;
 import java.util.TreeSet;
 
 import com.alibaba.profiler.config.QueueConfig;
-import com.alibaba.profiler.util.PrintUtil;
+import com.alibaba.profiler.util.LogUtil;
 
 /**
  * @author wxy on 16/6/4.
@@ -110,10 +110,10 @@ public class DataFileManager {
             return;
         }
         NavigableSet<String> subSet = oldFiles.subSet(first, true, filePath, false);
-        List<String> deleteList = new ArrayList<String>();
+        List<String> deleteList = new ArrayList<>();
         for (String deletePath : subSet) {
-            if (new File(deletePath).delete() == false) {
-                PrintUtil.error("Delete the old file " + deletePath + " failed.");
+            if (!new File(deletePath).delete()) {
+                LogUtil.error("Delete the old file " + deletePath + " failed.");
             } else {
                 deleteList.add(deletePath);
             }

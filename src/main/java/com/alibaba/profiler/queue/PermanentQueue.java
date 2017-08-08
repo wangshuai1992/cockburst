@@ -5,37 +5,35 @@ import java.util.Properties;
 
 import com.alibaba.profiler.config.QueueConfig;
 import com.alibaba.profiler.exception.FailedException;
-import com.alibaba.profiler.util.PrintUtil;
+import com.alibaba.profiler.util.LogUtil;
 
 /**
  * @author wxy date 2017/04/26
  */
 public class PermanentQueue {
 
-    private static final String PROFILER_CONFIG_FILE = "profiler.properties";
+    private static final String CONFIG_FILE = "profiler.properties";
 
     private volatile boolean configured = false;
 
     private PermanentQueue(){
-        InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(PROFILER_CONFIG_FILE);
+        //load configuration
+        InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(CONFIG_FILE);
         Properties prop = new Properties();
-        if (isConfigured()) {
-            return;
-        }
         if (in == null) {
-            //todo something
-            PrintUtil.warn("The profiler.properties is not exist, maybe configure by code.");
+            LogUtil.warn("The profiler.properties not exist, all configure is default.");
             return;
         }
 
+        if (isConfigured()) {
+            return;
+        }
         try {
             prop.load(in);
-            QueueConfig.getInstance().setAll(prop);
-            configured = true;
-            PrintUtil.info("Profiler configuration is successful. ");
+            setConfiguration(prop);
+            LogUtil.info("Profiler configuration is successful. ");
         } catch (Exception e) {
-            //todo something
-            PrintUtil.error("An error occurred when the configuration parameters. " + e);
+            LogUtil.error("An error occurred when the configuration parameters. configure default" + e);
         } finally {
             try {
                 in.close();
@@ -46,7 +44,7 @@ public class PermanentQueue {
         }
     }
 
-    public synchronized void setConfiguration(Properties prop) {
+    public void setConfiguration(Properties prop) {
         QueueConfig config = QueueConfig.getInstance();
         if (configured) {
             return;
@@ -56,7 +54,7 @@ public class PermanentQueue {
         configured = true;
     }
 
-    public synchronized boolean isConfigured() {
+    public boolean isConfigured() {
         return configured;
     }
 

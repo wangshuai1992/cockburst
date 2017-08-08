@@ -8,47 +8,43 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.alibaba.profiler.config.QueueConfig;
 import com.alibaba.profiler.exception.FailedException;
-import com.alibaba.profiler.util.PrintUtil;
+import com.alibaba.profiler.util.LogUtil;
 
 /**
  * @author wxy on 16/6/4.
  */
 public class QueueFactory {
 
-    private final ConcurrentHashMap<String, FutureTask<AbstractQueue>> queueHolders;
-    private final AtomicBoolean stopped;
+    private final ConcurrentHashMap<String, FutureTask<AbstractQueue>> queueHolders = new ConcurrentHashMap<>();
+    private volatile boolean stopped = false;
     private QueueConfig config = QueueConfig.getInstance();
 
     static {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
             public void run() {
-                PrintUtil.debug("Profiler is shutting down..........");
+                LogUtil.debug("queueFactory is destroying..........");
                 QueueFactory.getInstance().destroy();
             }
-        }, "AsyncScribeSender-destroy"));
+        }, "QueueFactory-destroy"));
     }
 
     public static QueueFactory getInstance() {
-        return AsyncScribeSenderHolder.INSTANCE;
+        return QueueFactoryHolder.INSTANCE;
     }
 
-    private static class AsyncScribeSenderHolder {
+    private static class QueueFactoryHolder {
         private static final QueueFactory INSTANCE = new QueueFactory();
     }
 
-    private QueueFactory() {
-        queueHolders = new ConcurrentHashMap<String, FutureTask<AbstractQueue>>();
-        stopped = new AtomicBoolean(false);
-    }
-
     public AbstractQueue getQueue(String key) throws FailedException {
-        if (stopped.get()) {
-            throw new FailedException("queueFactory has been destroyed.");
+        if (isStopped()) {
+            throw new FailedException("queueFactory has been destroyed.please reload it");
         }
         try {
             FutureTask<AbstractQueue> old = queueHolders.get(key);
             if (old == null) {
-                FutureTask<AbstractQueue> futureTask = new FutureTask<AbstractQueue>(new AsyncQueueBuilder(key));
+                FutureTask<AbstractQueue> futureTask = new FutureTask<>(new QueueBuilder(key));
                 old = queueHolders.putIfAbsent(key, futureTask);
                 if (old == null) {
                     old = futureTask;
@@ -62,12 +58,13 @@ public class QueueFactory {
 
     }
 
-    static class AsyncQueueBuilder implements Callable<AbstractQueue> {
+    private static class QueueBuilder implements Callable<AbstractQueue> {
         private String queueName;
 
-        public AsyncQueueBuilder(String queueName) {
+        public QueueBuilder(String queueName) {
             this.queueName = queueName;
         }
+
         @Override
         public AbstractQueue call() {
             //init permanent queue
@@ -81,24 +78,28 @@ public class QueueFactory {
         try {
             return ft.get();
         } catch (Exception e) {
-            PrintUtil.error("futureGet error. " + e);
+            LogUtil.error("futureGet error. " + e);
         }
         throw new RuntimeException("Cannot create AsyncQueue. ");
     }
 
     public void destroy() {
-        stopped.set(true);
+        stopped = true;
         Set<String> keySet = queueHolders.keySet();
         for (String key : keySet) {
             try {
                 queueHolders.get(key).get().shutdown();
-                PrintUtil.warn("Destroy the queue " + key);
+                LogUtil.warn("Destroy the queue " + key);
             } catch (Exception e) {
-                PrintUtil.error("Destroy the queue " + key + " failed. " + e);
+                LogUtil.error("Destroy the queue " + key + " failed. " + e);
                 if (config.isPrintExceptionStack()) {
                     e.printStackTrace();
                 }
             }
         }
+    }
+
+    private boolean isStopped(){
+        return stopped;
     }
 }

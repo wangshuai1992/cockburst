@@ -6,7 +6,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 import com.alibaba.profiler.config.QueueConfig;
-import com.alibaba.profiler.util.PrintUtil;
+import com.alibaba.profiler.util.LogUtil;
 import com.alibaba.profiler.util.SleepUtil;
 
 /**
@@ -42,19 +42,19 @@ public class FileMonitor implements AsyncTask {
                 SleepUtil.sleep(MONITOR_TIME);
             }
         }catch (Exception e){
-            PrintUtil.error("monitor thread run error"+e.getCause());
+            LogUtil.error("monitor thread run error"+e.getCause());
         }
 
     }
 
     private double getDirSize(File file) {
-        //ÅÐ¶ÏÎÄ¼þÊÇ·ñ´æÔÚ
+        //ï¿½Ð¶ï¿½ï¿½Ä¼ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
         double size = 0;
         if (!file.exists()) {
-            PrintUtil.error("monitor dir is not exist");
+            LogUtil.error("monitor dir is not exist");
             return size;
         }
-        //Èç¹ûÊÇÄ¿Â¼ÔòµÝ¹é¼ÆËãÆäÄÚÈÝµÄ×Ü´óÐ¡
+        //ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿Â¼ï¿½ï¿½Ý¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ýµï¿½ï¿½Ü´ï¿½Ð¡
         if (file.isDirectory()) {
             File[] children = file.listFiles();
             if (null == children||children.length==0){
@@ -64,7 +64,7 @@ public class FileMonitor implements AsyncTask {
                 size += getDirSize(f);
             }
             return size;
-        } else {//Èç¹ûÊÇÎÄ¼þÔòÖ±½Ó·µ»ØÆä´óÐ¡,ÒÔ¡°Õ×¡±Îªµ¥Î»
+        } else {//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½Ö±ï¿½Ó·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¡,ï¿½Ô¡ï¿½ï¿½×¡ï¿½Îªï¿½ï¿½Î»
             size = (double) file.length() / 1024 / 1024;
             return size;
         }
@@ -88,6 +88,6 @@ public class FileMonitor implements AsyncTask {
     }
 
     private  void sendMessage(String message) {
-        PrintUtil.error(message);
+        LogUtil.error(message);
     }
 }

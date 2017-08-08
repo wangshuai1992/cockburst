@@ -11,13 +11,13 @@ import java.nio.charset.Charset;
 import com.alibaba.profiler.config.QueueConfig;
 import com.alibaba.profiler.queue.Meta;
 import com.alibaba.profiler.util.CheckSum;
-import com.alibaba.profiler.util.PrintUtil;
+import com.alibaba.profiler.util.LogUtil;
 
 /**
  * Created by IntelliJ IDEA.
  * User: caojiadong
  * Date: 13-4-17
- * Time: ÏÂÎç5:54
+ * Time: ï¿½ï¿½ï¿½ï¿½5:54
  * To change this template use File | Settings | File Templates.
  */
 public class MetaManager {
@@ -57,7 +57,7 @@ public class MetaManager {
         int pos = (int) mbb.getLong();
         int len = mbb.getInt();
         if (len > MAX_META_LEN - 20) {
-            PrintUtil.error("Incorrect meta content, reset it.");
+            LogUtil.error("Incorrect meta content, reset it.");
             meta.set(0, null);
             return;
         }
@@ -65,7 +65,7 @@ public class MetaManager {
         try {
             mbb.get(dst);
         } catch (BufferUnderflowException e) {
-            PrintUtil.error("Incorrect meta content, reset it.");
+            LogUtil.error("Incorrect meta content, reset it.");
             meta.set(0, null);
             return;
         }
@@ -77,7 +77,7 @@ public class MetaManager {
     private void checkValidateMeta(int pos, String fileName, long ck) {
         long ck2 = CheckSum.adler32CheckSum(Meta.concat(pos, fileName));
         if (ck2 != ck) {
-            PrintUtil.warn("Incorrect check sum value " + ck + " != " + ck2 + ", reset it.");
+            LogUtil.warn("Incorrect check sum value " + ck + " != " + ck2 + ", reset it.");
             meta.set(0, null);
         } else {
             meta.set(pos, fileName);
@@ -105,7 +105,7 @@ public class MetaManager {
         try {
             metaFile.close();
         } catch (IOException e) {
-            PrintUtil.error("Close metaFile error. " + e);
+            LogUtil.error("Close metaFile error. " + e);
         }
     }
 }
