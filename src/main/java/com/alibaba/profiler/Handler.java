@@ -1,4 +1,4 @@
-package com.alibaba.profiler.queue;
+package com.alibaba.profiler;
 
 /**
  * @author wxy date 2017/04/30

@@ -3,11 +3,7 @@ package com.alibaba.profiler.queue;
 import com.alibaba.profiler.util.CheckSum;
 
 /**
- * Created by IntelliJ IDEA.
- * User: caojiadong
- * Date: 13-4-17
- * Time: обнГ5:54
- * To change this template use File | Settings | File Templates.
+ * @author wxy on 16/6/4.
  */
 public class Meta {
     private volatile int readPos;

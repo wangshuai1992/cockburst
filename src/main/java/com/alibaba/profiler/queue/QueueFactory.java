@@ -4,10 +4,9 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.FutureTask;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.alibaba.profiler.config.QueueConfig;
-import com.alibaba.profiler.exception.FailedException;
+import com.alibaba.profiler.exception.QueueException;
 import com.alibaba.profiler.util.LogUtil;
 
 /**
@@ -37,9 +36,9 @@ public class QueueFactory {
         private static final QueueFactory INSTANCE = new QueueFactory();
     }
 
-    public AbstractQueue getQueue(String key) throws FailedException {
+    public AbstractQueue getQueue(String key) throws QueueException {
         if (isStopped()) {
-            throw new FailedException("queueFactory has been destroyed.please reload it");
+            throw new QueueException("queueFactory has been destroyed.please reload");
         }
         try {
             FutureTask<AbstractQueue> old = queueHolders.get(key);
@@ -51,9 +50,9 @@ public class QueueFactory {
                     old.run();
                 }
             }
-            return futureGet(old);
+            return futureResult(old);
         } catch (Exception e) {
-            throw new FailedException("queueFactory get queue exception. " + e);
+            throw new QueueException("queueFactory get queue exception. " + e);
         }
 
     }
@@ -68,19 +67,19 @@ public class QueueFactory {
         @Override
         public AbstractQueue call() {
             //init permanent queue
-            AbstractQueue aq = new FileChannelQueue(queueName);
+            AbstractQueue aq = new QueueChannel(queueName);
             aq.openQueue();
             return aq;
         }
     }
 
-    private AbstractQueue futureGet(FutureTask<AbstractQueue> ft) {
+    private AbstractQueue futureResult(FutureTask<AbstractQueue> ft) {
         try {
             return ft.get();
         } catch (Exception e) {
-            LogUtil.error("futureGet error. " + e);
+            LogUtil.error("futureResult error. " + e);
         }
-        throw new RuntimeException("Cannot create AsyncQueue. ");
+        throw new RuntimeException("can not create queue. ");
     }
 
     public void destroy() {

@@ -23,8 +23,8 @@ public class DataFileManager {
     public DataFileManager(String queueName) {
         this.dataPath = QueueConfig.getInstance().getDataPath() + "/";
         this.dataFileName = queueName + DATA_FILE_SUFFIX;
-        this.files = new TreeSet<String>();
-        this.oldFiles = new TreeSet<String>();
+        this.files = new TreeSet<>();
+        this.oldFiles = new TreeSet<>();
         loadFiles();
     }
 
@@ -36,7 +36,7 @@ public class DataFileManager {
         String[] nameList = dir.list(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
-                return (name.indexOf(dataFileName) != -1);
+                return (name.contains(dataFileName));
             }
         });
         for (String fileName : nameList) {
@@ -49,10 +49,10 @@ public class DataFileManager {
         long count = 0;
         if (!files.isEmpty()) {
             String lastFileName = files.last();
-            count = Long.valueOf(lastFileName.substring(lastFileName.lastIndexOf(".") + 1)).longValue() + 1;
+            count = Long.valueOf(lastFileName.substring(lastFileName.lastIndexOf(".") + 1)) + 1;
         } else if (!oldFiles.isEmpty()) {
             String lastFileName = oldFiles.last();
-            count = Long.valueOf(lastFileName.substring(lastFileName.lastIndexOf(".") + 1)).longValue() + 1;
+            count = Long.valueOf(lastFileName.substring(lastFileName.lastIndexOf(".") + 1)) + 1;
         }
 
         File dir = new File(dataPath);
@@ -68,9 +68,9 @@ public class DataFileManager {
     public synchronized boolean findFile(String findName) {
         boolean isFound = false;
         if (findName == null) {
-            return isFound;
+            return false;
         }
-        List<String> tempFileList = new ArrayList<String>();
+        List<String> tempFileList = new ArrayList<>();
         String fileName;
         while ((fileName = files.pollFirst()) != null) {
             tempFileList.add(fileName);

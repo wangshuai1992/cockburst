@@ -5,12 +5,14 @@ import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import com.alibaba.profiler.config.QueueConfig;
-import com.alibaba.profiler.queue.AsyncTask;
-import com.alibaba.profiler.queue.FileChannelQueue;
+import com.alibaba.profiler.Task;
+import com.alibaba.profiler.queue.QueueChannel;
 import com.alibaba.profiler.queue.MessageWrapper;
 import com.alibaba.profiler.queue.Meta;
 import com.alibaba.profiler.util.LogUtil;
@@ -22,7 +24,7 @@ import com.alibaba.profiler.util.SleepUtil;
  * @author wxy
  *         create 2017-05-14 下午10:31
  */
-public class FileChannelReader implements AsyncTask {
+public class FileReaderChannel implements Task {
     private final static int NO_DATA_WAIT_TIMEOUT = 2 * 1000;
     private final static int OPEN_CHANNEL_RETRY_COUNT = 3;
     private final static int OPEN_CHANNEL_RETRY_TIMEOUT = 5;
@@ -32,18 +34,19 @@ public class FileChannelReader implements AsyncTask {
     private boolean stopped = false;
     private boolean firstMessageInFile = false;
     private final ExecutorService readerTask;
-    private final FileChannelQueue fileChannelQueue;
+    private final QueueChannel fileChannelQueue;
     private MappedByteBuffer readMappedByteBuffer;
     private FileChannel readFileChannel;
 
-    public FileChannelReader(FileChannelQueue fileChannelQueue) {
+    public FileReaderChannel(QueueChannel fileChannelQueue) {
         this.fileChannelQueue = fileChannelQueue;
-        final String queueName = fileChannelQueue.getQueueName();
         findCurrentDataFile();
-        this.readerTask = Executors.newSingleThreadExecutor(new ThreadFactory() {
+        //create a single thread
+        this.readerTask = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
+            new LinkedBlockingDeque<Runnable>(1), new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
-                return new Thread(r, "Profiler-ReadTask-" + queueName);
+                return new Thread(r, "FileReaderChannel-ReaderTask-");
             }
         });
     }
@@ -88,6 +91,7 @@ public class FileChannelReader implements AsyncTask {
             switchReadFile();
         }
         while (!stopped) {
+            Long current = System.currentTimeMillis();
             openChannel();
             if (Thread.interrupted() || stopped) {
                 return;
@@ -97,6 +101,7 @@ public class FileChannelReader implements AsyncTask {
                 return;
             }
             switchReadFile();
+            System.out.println("*************10M file consumer take time == " + (System.currentTimeMillis() - current));
         }
     }
 
@@ -143,8 +148,7 @@ public class FileChannelReader implements AsyncTask {
         firstMessageInFile = readPos == 0;
         readMappedByteBuffer.position(readPos);
         int length;
-        while ((length = getHeader()) > 0
-            || dataFileManager.isEmpty()) {
+        while ((length = getHeader()) > 0 || dataFileManager.isEmpty()) {
             if (Thread.interrupted() || stopped) {
                 return;
             }
@@ -165,7 +169,7 @@ public class FileChannelReader implements AsyncTask {
             }
         }
         // Process time window: When new file create, the last file grow up.
-        int leftLength = 0;
+        int leftLength;
         while ((leftLength = getHeader()) > 0) {
             if (Thread.interrupted() || stopped) {
                 return;

@@ -1,10 +1,14 @@
-package com.alibaba.profiler.queue;
+package com.alibaba.profiler.manager;
 
 import java.io.File;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
+import com.alibaba.profiler.Task;
 import com.alibaba.profiler.config.QueueConfig;
 import com.alibaba.profiler.util.LogUtil;
 import com.alibaba.profiler.util.SleepUtil;
@@ -12,7 +16,7 @@ import com.alibaba.profiler.util.SleepUtil;
 /**
  * @author wxy on 16/6/4.
  */
-public class FileMonitor implements AsyncTask {
+public class FileMonitor implements Task {
     private final String filePath;
     private final ExecutorService monitorTask;
     private boolean stopped = false;
@@ -22,10 +26,13 @@ public class FileMonitor implements AsyncTask {
 
     public FileMonitor() {
         this.filePath = QueueConfig.getInstance().getDataPath();
-        this.monitorTask = Executors.newSingleThreadExecutor(new ThreadFactory() {
+
+        //create a single thread
+        this.monitorTask = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
+            new LinkedBlockingDeque<Runnable>(1), new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
-                return new Thread(r, "Profiler-monitorTask-" + filePath);
+                return new Thread(r, "FileMonitor-ReaderTask-");
             }
         });
 
@@ -48,13 +55,11 @@ public class FileMonitor implements AsyncTask {
     }
 
     private double getDirSize(File file) {
-        //�ж��ļ��Ƿ����
         double size = 0;
         if (!file.exists()) {
             LogUtil.error("monitor dir is not exist");
             return size;
         }
-        //�����Ŀ¼��ݹ���������ݵ��ܴ�С
         if (file.isDirectory()) {
             File[] children = file.listFiles();
             if (null == children||children.length==0){
@@ -64,7 +69,7 @@ public class FileMonitor implements AsyncTask {
                 size += getDirSize(f);
             }
             return size;
-        } else {//������ļ���ֱ�ӷ������С,�ԡ��ס�Ϊ��λ
+        } else {
             size = (double) file.length() / 1024 / 1024;
             return size;
         }

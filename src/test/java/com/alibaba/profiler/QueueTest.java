@@ -3,14 +3,14 @@ package com.alibaba.profiler;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.alibaba.profiler.exception.FailedException;
+import com.alibaba.profiler.exception.QueueException;
 import com.alibaba.profiler.queue.PermanentQueue;
 
 /**
  * Description:test
  *
  * @author wxy
- * create 2017-05-14 下午10:31
+ *         create 2017-05-14 下午10:31
  */
 
 public class QueueTest {
@@ -27,20 +27,23 @@ public class QueueTest {
                 @Override
                 public void run() {
                     Long start = System.currentTimeMillis();
+                    int sum = 0;
                     for (int j = 0; j < 1000000; j++) {
                         try {
                             /*PermanentQueue.getInstance().offer("test",
                                 String.valueOf(Thread.currentThread().getName() + "-" + j + ","));
                             PermanentQueue.getInstance().offer("test1",
                                 String.valueOf(Thread.currentThread() + "-" + j + ","));*/
-                            PermanentQueue.getInstance().offer("test3",
-                                String.valueOf(Thread.currentThread().getName() + "-" + j + ","));
-                           // System.out.println(PermanentQueue.getInstance().pop("test3"));
-                        } catch (FailedException e) {
-                            e.printStackTrace();
+                            //PermanentQueue.offer("test9", String.valueOf(j));
+                            // System.out.println(PermanentQueue.getInstance().pop("test3"));
+                            sum = sum + Integer.valueOf(PermanentQueue.take("test9"));
+                        } catch (QueueException e) {
+                            System.out.println(e.getMessage());
+                        } catch (Exception e){
+                            System.out.println(e.getMessage());
                         }
                     }
-                    System.out.println(Thread.currentThread().getName() + " ,1000000 datas write take == " + (
+                    System.out.println("sum == " + sum + " ,1000000 data write take == " + (
                         System.currentTimeMillis() - start));
                 }
             });

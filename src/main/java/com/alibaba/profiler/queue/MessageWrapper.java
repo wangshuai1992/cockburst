@@ -1,11 +1,7 @@
 package com.alibaba.profiler.queue;
 
 /**
- * Created by IntelliJ IDEA.
- * User: caojiadong
- * Date: 13-4-23
- * Time: обнГ8:20
- * To change this template use File | Settings | File Templates.
+ * @author wxy on 16/6/4.
  */
 public class MessageWrapper {
     private final byte[] content;

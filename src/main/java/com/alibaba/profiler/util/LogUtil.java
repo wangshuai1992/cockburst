@@ -1,6 +1,5 @@
 package com.alibaba.profiler.util;
 
-import com.alibaba.profiler.config.QueueConfig;
 
 /**
  * @author wxy on 16/6/4.
@@ -25,9 +24,7 @@ public class LogUtil {
     }
 
     public static void print(String line) {
-        if (QueueConfig.getInstance().isPrintExceptionStack()){
             System.out.println(line);
-        }
 
     }
 

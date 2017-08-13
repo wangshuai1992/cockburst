@@ -1,7 +1,9 @@
 package com.alibaba.profiler.config;
 
+import java.io.InputStream;
 import java.util.Properties;
 
+import com.alibaba.profiler.util.LogUtil;
 
 /**
  * @author wxy on 16/6/4.
@@ -9,15 +11,14 @@ import java.util.Properties;
 public class QueueConfig {
 
     private static final String QUEUE_SEGMENT_SIZE = "10485760";
+    private static final String CONFIG_FILE = "profiler.properties";
+
+    private volatile boolean configured = false;
 
     private boolean printExceptionStack;
     private String metaPath;
     private String dataPath;
     private int rotationSize;
-    private int readBuffer;
-
-    private String pattern;
-    private int batch;
 
 
 
@@ -54,44 +55,54 @@ public class QueueConfig {
         this.rotationSize = rotationSize;
     }
 
-    public int getReadBuffer() {
-        return readBuffer;
-    }
-
-    public void setReadBuffer(int readBuffer) {
-        this.readBuffer = readBuffer;
-    }
-
-    public String getPattern() {
-        return pattern;
-    }
-
-    public void setPattern(String pattern) {
-        this.pattern = pattern;
-    }
-
-
-
-    public int getBatch() {
-        return batch;
-    }
-
-    public void setBatch(int batch) {
-        this.batch = batch;
-    }
 
     private QueueConfig() {
+        InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(CONFIG_FILE);
+        Properties prop = new Properties();
+        if (in == null) {
+            LogUtil.warn("The profiler.properties not exist, all configure is default.");
+            return;
+        }
 
+        if (isConfigured()) {
+            return;
+        }
+        try {
+            prop.load(in);
+            setConfiguration(prop);
+            LogUtil.info("QueueConfig configuration is successful. ");
+        } catch (Exception e) {
+            LogUtil.error("An error occurred when the configuration parameters. configure default" + e);
+        } finally {
+            try {
+                in.close();
+                prop.clear();
+            } catch (Exception e) {
+                // Nothing to do..
+            }
+        }
     }
 
-    public static final QueueConfig getInstance() {
-        return SenderConfigHolder.INSTANCE;
+    public static QueueConfig getInstance() {
+        return QueueConfigHolder.INSTANCE;
     }
 
-    private static class SenderConfigHolder {
+    private static class QueueConfigHolder {
         private static final QueueConfig INSTANCE = new QueueConfig();
     }
 
+
+    public void setConfiguration(Properties prop) {
+        if (configured) {
+            return;
+        }
+        setAll(prop);
+        configured = true;
+    }
+
+    public boolean isConfigured() {
+        return configured;
+    }
     public void setAll(Properties prop) {
         String appHome = getClass().getResource("/").getPath() + "../";
         String metaPath = prop.getProperty("metaPath", "./log/profiler/meta");
@@ -106,10 +117,8 @@ public class QueueConfig {
         } else {
             setDataPath(dataPath);
         }
-        //setPattern(prop.getProperty("pattern"));
         setRotationSize(Integer.parseInt(prop.getProperty("rotationSize", QUEUE_SEGMENT_SIZE
             + "")));
-        setReadBuffer(Integer.parseInt(prop.getProperty("readBuffer", "2048")));
         setPrintExceptionStack(Boolean.parseBoolean(prop.getProperty("printExceptionStack", "true")));
 
     }
@@ -125,9 +134,6 @@ public class QueueConfig {
             ", metaPath='" + metaPath + '\'' +
             ", dataPath='" + dataPath + '\'' +
             ", rotationSize=" + rotationSize +
-            ", readBuffer=" + readBuffer +
-            ", pattern='" + pattern + '\'' +
-            ", batch=" + batch +
             '}';
     }
 }

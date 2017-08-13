@@ -1,9 +1,9 @@
-package com.alibaba.profiler.queue;
+package com.alibaba.profiler;
 
 /**
  * @author wxy on 16/6/4.
  */
-public interface AsyncTask {
+public interface Task {
     /**
      * task start
      */

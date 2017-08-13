@@ -14,13 +14,9 @@ import com.alibaba.profiler.util.CheckSum;
 import com.alibaba.profiler.util.LogUtil;
 
 /**
- * Created by IntelliJ IDEA.
- * User: caojiadong
- * Date: 13-4-17
- * Time: ����5:54
- * To change this template use File | Settings | File Templates.
+ * @author wxy on 16/6/4.
  */
-public class MetaManager {
+public class MetaFileManager {
     private final Meta meta;
     private final String metaPath;
     private MappedByteBuffer mbb;
@@ -29,17 +25,17 @@ public class MetaManager {
     private RandomAccessFile metaFile;
     private final String metaFileName;
 
-    public MetaManager(String queueName) {
+    public MetaFileManager(String queueName) {
         meta = new Meta();
         metaPath = QueueConfig.getInstance().getMetaPath() + "/";
         metaFileName = queueName + META_FILE_SUFFIX;
-        initMetaFile();
+        buildMeta();
     }
 
-    private void initMetaFile() {
+    private void buildMeta() {
         File dir = new File(metaPath);
         if (!dir.exists() && !dir.mkdirs()) {
-            throw new RuntimeException("Cannot create meta directory: " + metaPath);
+            throw new RuntimeException("Cannot create meta directory == " + metaPath);
         }
 
         try {
@@ -49,10 +45,10 @@ public class MetaManager {
             throw new RuntimeException("Create meta file failed", e);
         }
 
-        loadMetaData();
+        loadMetaFromFile();
     }
 
-    private void loadMetaData() {
+    private void loadMetaFromFile() {
         mbb.position(0);
         int pos = (int) mbb.getLong();
         int len = mbb.getInt();

@@ -3,43 +3,42 @@ package com.alibaba.profiler.queue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import com.alibaba.profiler.config.QueueConfig;
-import com.alibaba.profiler.manager.AbstractFileChannelWriter;
 import com.alibaba.profiler.manager.DataFileManager;
-import com.alibaba.profiler.manager.FileChannelReader;
-import com.alibaba.profiler.manager.MetaManager;
+import com.alibaba.profiler.manager.FileReaderChannel;
+import com.alibaba.profiler.manager.FileWriterChannel;
+import com.alibaba.profiler.manager.MetaFileManager;
 import com.alibaba.profiler.util.LogUtil;
 
 /**
  * @author wxy on 16/6/4.
  */
-public class FileChannelQueue extends AbstractQueue {
+public class QueueChannel extends AbstractQueue {
 
-    private final MetaManager metaManager;
+    private final MetaFileManager metaManager;
     private final DataFileManager dataFileManager;
-    private final AbstractFileChannelWriter writer;
-    private final FileChannelReader reader;
+    private final FileWriterChannel writer;
+    private final FileReaderChannel reader;
     private MessageWrapper lastMessage;
     private final LinkedBlockingQueue<MessageWrapper> queue;
     private final String queueName;
     private final CountDownLatch latch = new CountDownLatch(1);
-    private QueueConfig config = QueueConfig.getInstance();
 
-    public FileChannelQueue(String queueName) {
+    public QueueChannel(String queueName) {
         super(queueName);
         this.queueName = queueName;
-        this.metaManager = new MetaManager(queueName);
+        this.metaManager = new MetaFileManager(queueName);
         this.dataFileManager = new DataFileManager(queueName);
-        this.writer = AbstractFileChannelWriter.createWriter(config.getPattern(), this);
-        this.reader = new FileChannelReader(this);
+        this.writer = new FileWriterChannel(this);
+        this.reader = new FileReaderChannel(this);
         this.queue = new LinkedBlockingQueue<>(100000);
     }
+
 
     public String getQueueName() {
         return queueName;
     }
 
-    public MetaManager getMetaManager() {
+    public MetaFileManager getMetaManager() {
         return metaManager;
     }
 
@@ -61,14 +60,25 @@ public class FileChannelQueue extends AbstractQueue {
     }
 
     @Override
-    public MessageWrapper get() {
+    public MessageWrapper getByPop() {
         MessageWrapper messageWrapper = null;
         try {
-            //todo luxi 这有线程阻塞的风险
-            messageWrapper = queue.take();
+            messageWrapper = queue.poll();
             lastMessage = messageWrapper;
         } catch (Exception e) {
-            LogUtil.warn("Interrupted when take message from FileChannelQueue. " + e);
+            LogUtil.warn("Exception when pop message from QueueChannel. " + e);
+        }
+        return messageWrapper;
+    }
+
+    @Override
+    public MessageWrapper getByTake() {
+        MessageWrapper messageWrapper = null;
+        try {
+            messageWrapper = queue.poll();
+            lastMessage = messageWrapper;
+        } catch (Exception e) {
+            LogUtil.warn("Exception when take message from QueueChannel. " + e);
         }
         return messageWrapper;
     }
