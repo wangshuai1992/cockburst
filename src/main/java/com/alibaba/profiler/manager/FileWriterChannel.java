@@ -79,7 +79,7 @@ public class FileWriterChannel implements Task {
     }
 
     protected void checkWriteChannel(int messageSize) {
-        int rotationSize = QueueConfig.getInstance().getRotationSize();
+        int rotationSize = QueueConfig.getInstance().getQueueSegmentSize();
         try {
             if (writeFileChannel == null) {
                 writeFileChannel = new RandomAccessFile(fileChannelQueue.getDataFileManager()

@@ -28,20 +28,20 @@ public class FileReaderChannel implements Task {
     private final static int NO_DATA_WAIT_TIMEOUT = 2 * 1000;
     private final static int OPEN_CHANNEL_RETRY_COUNT = 3;
     private final static int OPEN_CHANNEL_RETRY_TIMEOUT = 5;
+    //todo luxi  message长度限制,要提出来
     private final static int MESSAGE_HEADER_LENGTH_LIMIT = 5 * 1024 * 1024;
     private String readFile;
     private int readPos;
     private boolean stopped = false;
     private boolean firstMessageInFile = false;
     private final ExecutorService readerTask;
-    private final QueueChannel fileChannelQueue;
+    private final QueueChannel queueChannel;
     private MappedByteBuffer readMappedByteBuffer;
     private FileChannel readFileChannel;
 
-    public FileReaderChannel(QueueChannel fileChannelQueue) {
-        this.fileChannelQueue = fileChannelQueue;
-        findCurrentDataFile();
-        //create a single thread
+    public FileReaderChannel(QueueChannel queueChannel) {
+        this.queueChannel = queueChannel;
+        //create a single reader thread
         this.readerTask = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingDeque<Runnable>(1), new ThreadFactory() {
             @Override
@@ -49,14 +49,17 @@ public class FileReaderChannel implements Task {
                 return new Thread(r, "FileReaderChannel-ReaderTask-");
             }
         });
+
+        initFirstDataFileChannel();
     }
 
-    private void findCurrentDataFile() {
-        Meta meta = fileChannelQueue.getMetaManager().get();
-        DataFileManager dataFileManager = fileChannelQueue.getDataFileManager();
-        readPos = meta.getReadPos();
-        readFile = meta.getFileName();
+    private void initFirstDataFileChannel() {
+        readPos = queueChannel.getMetaManager().get().getReadPos();
+        readFile = queueChannel.getMetaManager().get().getFileName();
+        DataFileManager dataFileManager = queueChannel.getDataFileManager();
         String firstFile = dataFileManager.pollFirstFile();
+
+        //Enumerate exception
         if (firstFile == null) {
             if (readFile != null) {
                 LogUtil.error("Meta is " + readFile + ", but data files are not exists.");
@@ -71,7 +74,7 @@ public class FileReaderChannel implements Task {
         } else if (!readFile.equals(firstFile)) {
             LogUtil.warn("Meta " + readFile + " is not firstFile " + firstFile);
             File f = new File(readFile);
-            // If exists, find it.
+            // If exists, find it and reset it.
             if (f.exists() && dataFileManager.findFile(readFile)) {
                 return;
             }
@@ -81,50 +84,51 @@ public class FileReaderChannel implements Task {
     }
 
     private void loadMessages() {
+
         if (readFile == null) {
             try {
-                fileChannelQueue.getLatch().await();
+                queueChannel.getLatch().await();
             } catch (InterruptedException e) {
-                LogUtil.error("Latch operation interruptted. " + e);
+                LogUtil.error("Latch operation interrupted. " + e);
                 return;
             }
-            switchReadFile();
+            readNextFile();
         }
         while (!stopped) {
-            Long current = System.currentTimeMillis();
             openChannel();
             if (Thread.interrupted() || stopped) {
                 return;
             }
-            loadFromFile();
+            loadFileData();
             if (Thread.interrupted() || stopped) {
                 return;
             }
-            switchReadFile();
-            System.out.println("*************10M file consumer take time == " + (System.currentTimeMillis() - current));
+            readNextFile();
         }
     }
 
-    private void switchReadFile() {
-        DataFileManager dataFileManager = fileChannelQueue.getDataFileManager();
-        if (!dataFileManager.isEmpty()) {
-            if (readFileChannel != null) {
-                try {
-                    readMappedByteBuffer.force();
-                    readFileChannel.close();
-                } catch (Exception e) {
-                    LogUtil.error("SwitchReadFile error. " + e);
-                }
-            }
-            readFile = dataFileManager.pollFirstFile();
-            readPos = 0;
-            LogUtil.info("Switched read file to " + readFile + ". ");
+    private void readNextFile() {
+        DataFileManager dataFileManager = queueChannel.getDataFileManager();
+        if (dataFileManager.isEmpty()) {
+            return;
         }
+
+        if (readFileChannel != null) {
+            try {
+                readMappedByteBuffer.force();
+                readFileChannel.close();
+            } catch (Exception e) {
+                LogUtil.error("ReadNextFile error. " + e);
+            }
+        }
+        readFile = dataFileManager.pollFirstFile();
+        readPos = 0;
+        LogUtil.info("Read next file to " + readFile + ". ");
     }
 
     private void openChannel() {
         Throwable t = null;
-        int rotationSize = QueueConfig.getInstance().getRotationSize();
+        int rotationSize = QueueConfig.getInstance().getQueueSegmentSize();
 
         for (int i = 0; i < OPEN_CHANNEL_RETRY_COUNT; i++) {
             try {
@@ -139,27 +143,35 @@ public class FileReaderChannel implements Task {
         throw new RuntimeException("Open read file channel failed.", t);
     }
 
+    /**
+     * get message length
+     * @return  message length
+     */
     private int getHeader() {
         return (readMappedByteBuffer.remaining() < 4) ? 0 : readMappedByteBuffer.getInt();
     }
 
-    private void loadFromFile() {
-        DataFileManager dataFileManager = fileChannelQueue.getDataFileManager();
+
+    private void loadFileData() {
+        DataFileManager dataFileManager = queueChannel.getDataFileManager();
         firstMessageInFile = readPos == 0;
         readMappedByteBuffer.position(readPos);
         int length;
+
         while ((length = getHeader()) > 0 || dataFileManager.isEmpty()) {
             if (Thread.interrupted() || stopped) {
                 return;
             }
+            //length<=0,position in the  one file has to be end, wait to write....
             if (length <= 0) {
                 readMappedByteBuffer.position(readPos);
                 SleepUtil.sleep(NO_DATA_WAIT_TIMEOUT);
                 continue;
             }
+            //Parse message length error, data format has broken, drop this file.
             if (length > MESSAGE_HEADER_LENGTH_LIMIT) {
                 while (dataFileManager.isEmpty()) {
-                    LogUtil.error("Parse message header error, when tail the file. ");
+                    LogUtil.error("Parse message header error");
                     SleepUtil.sleep(NO_DATA_WAIT_TIMEOUT);
                 }
                 return;
@@ -168,7 +180,7 @@ public class FileReaderChannel implements Task {
                 break;
             }
         }
-        // Process time window: When new file create, the last file grow up.
+        // Process time window: When new file segment create, the last segment grow up.
         int leftLength;
         while ((leftLength = getHeader()) > 0) {
             if (Thread.interrupted() || stopped) {
@@ -186,7 +198,7 @@ public class FileReaderChannel implements Task {
 
     private boolean messageBody(int length) {
         if (length > MESSAGE_HEADER_LENGTH_LIMIT) {
-            readMappedByteBuffer.position(QueueConfig.getInstance().getRotationSize());
+            readMappedByteBuffer.position(QueueConfig.getInstance().getQueueSegmentSize());
             LogUtil.error("Parse message header error, set position to the end. ");
             return false;
         }
@@ -202,7 +214,7 @@ public class FileReaderChannel implements Task {
             , readPos, readFile);
         firstMessageInFile = false;
         try {
-            fileChannelQueue.getQueue().put(messageWrapper);
+            queueChannel.getQueue().put(messageWrapper);
         } catch (InterruptedException e) {
             LogUtil.error("Message enqueue failed. " + e);
         }

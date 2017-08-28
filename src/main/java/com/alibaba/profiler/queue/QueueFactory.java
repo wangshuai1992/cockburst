@@ -22,7 +22,7 @@ public class QueueFactory {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
-                LogUtil.debug("queueFactory is destroying..........");
+                LogUtil.debug("QueueFactory is destroying..........");
                 QueueFactory.getInstance().destroy();
             }
         }, "QueueFactory-destroy"));
@@ -38,21 +38,18 @@ public class QueueFactory {
 
     public AbstractQueue getQueue(String key) throws QueueException {
         if (isStopped()) {
-            throw new QueueException("queueFactory has been destroyed.please reload");
+            throw new QueueException("QueueFactory has been destroyed.please reload");
         }
         try {
-            FutureTask<AbstractQueue> old = queueHolders.get(key);
-            if (old == null) {
-                FutureTask<AbstractQueue> futureTask = new FutureTask<>(new QueueBuilder(key));
-                old = queueHolders.putIfAbsent(key, futureTask);
-                if (old == null) {
-                    old = futureTask;
-                    old.run();
-                }
+            FutureTask<AbstractQueue> queueHolder = queueHolders.get(key);
+            if (queueHolder == null) {
+                queueHolders.putIfAbsent(key, new FutureTask<>(new QueueBuilder(key)));
+                queueHolder = queueHolders.get(key);
+                queueHolder.run();
             }
-            return futureResult(old);
+            return futureResult(queueHolder);
         } catch (Exception e) {
-            throw new QueueException("queueFactory get queue exception. " + e);
+            throw new QueueException("QueueFactory get queue exception. " + e);
         }
 
     }

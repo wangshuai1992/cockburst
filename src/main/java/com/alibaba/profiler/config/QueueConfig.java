@@ -10,7 +10,8 @@ import com.alibaba.profiler.util.LogUtil;
  */
 public class QueueConfig {
 
-    private static final String QUEUE_SEGMENT_SIZE = "10485760";
+    /**default size 100M*/
+    private static final String QUEUE_SEGMENT_SIZE = "104857600";
     private static final String CONFIG_FILE = "profiler.properties";
 
     private volatile boolean configured = false;
@@ -18,7 +19,7 @@ public class QueueConfig {
     private boolean printExceptionStack;
     private String metaPath;
     private String dataPath;
-    private int rotationSize;
+    private int queueSegmentSize;
 
 
 
@@ -47,14 +48,13 @@ public class QueueConfig {
         this.dataPath = dataPath;
     }
 
-    public int getRotationSize() {
-        return rotationSize;
+    public int getQueueSegmentSize() {
+        return queueSegmentSize;
     }
 
-    public void setRotationSize(int rotationSize) {
-        this.rotationSize = rotationSize;
+    public void setQueueSegmentSize(int queueSegmentSize) {
+        this.queueSegmentSize = queueSegmentSize;
     }
-
 
     private QueueConfig() {
         InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(CONFIG_FILE);
@@ -117,7 +117,7 @@ public class QueueConfig {
         } else {
             setDataPath(dataPath);
         }
-        setRotationSize(Integer.parseInt(prop.getProperty("rotationSize", QUEUE_SEGMENT_SIZE
+        setQueueSegmentSize(Integer.parseInt(prop.getProperty("rotationSize", QUEUE_SEGMENT_SIZE
             + "")));
         setPrintExceptionStack(Boolean.parseBoolean(prop.getProperty("printExceptionStack", "true")));
 
@@ -133,7 +133,7 @@ public class QueueConfig {
             "printExceptionStack=" + printExceptionStack +
             ", metaPath='" + metaPath + '\'' +
             ", dataPath='" + dataPath + '\'' +
-            ", rotationSize=" + rotationSize +
+            ", rotationSize=" + queueSegmentSize +
             '}';
     }
 }

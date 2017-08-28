@@ -75,7 +75,7 @@ public class QueueChannel extends AbstractQueue {
     public MessageWrapper getByTake() {
         MessageWrapper messageWrapper = null;
         try {
-            messageWrapper = queue.poll();
+            messageWrapper = queue.take();
             lastMessage = messageWrapper;
         } catch (Exception e) {
             LogUtil.warn("Exception when take message from QueueChannel. " + e);

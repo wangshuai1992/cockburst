@@ -22,21 +22,22 @@ public class QueueTest {
         ExecutorService producersPool = Executors.newFixedThreadPool(10);
         ExecutorService consumersPool = Executors.newFixedThreadPool(10);
 
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 10; i++) {
             producersPool.submit(new Runnable() {
                 @Override
                 public void run() {
                     Long start = System.currentTimeMillis();
                     int sum = 0;
-                    for (int j = 0; j < 1000000; j++) {
+                    for (int j = 0; j < 100000; j++) {
                         try {
                             /*PermanentQueue.getInstance().offer("test",
                                 String.valueOf(Thread.currentThread().getName() + "-" + j + ","));
                             PermanentQueue.getInstance().offer("test1",
                                 String.valueOf(Thread.currentThread() + "-" + j + ","));*/
-                            //PermanentQueue.offer("test9", String.valueOf(j));
+                            PermanentQueue.offer("test10", String.valueOf(j));
                             // System.out.println(PermanentQueue.getInstance().pop("test3"));
-                            sum = sum + Integer.valueOf(PermanentQueue.take("test9"));
+                            //sum = sum + Integer.valueOf(PermanentQueue.take("test10"));
+                            //System.out.println("sum == " + sum);
                         } catch (QueueException e) {
                             System.out.println(e.getMessage());
                         } catch (Exception e){
