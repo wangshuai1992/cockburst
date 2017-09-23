@@ -14,7 +14,6 @@ import com.alibaba.profiler.config.QueueConfig;
 import com.alibaba.profiler.Task;
 import com.alibaba.profiler.queue.QueueChannel;
 import com.alibaba.profiler.queue.MessageWrapper;
-import com.alibaba.profiler.queue.Meta;
 import com.alibaba.profiler.util.LogUtil;
 import com.alibaba.profiler.util.SleepUtil;
 
@@ -28,8 +27,7 @@ public class FileReaderChannel implements Task {
     private final static int NO_DATA_WAIT_TIMEOUT = 2 * 1000;
     private final static int OPEN_CHANNEL_RETRY_COUNT = 3;
     private final static int OPEN_CHANNEL_RETRY_TIMEOUT = 5;
-    //todo luxi  message长度限制,要提出来
-    private final static int MESSAGE_HEADER_LENGTH_LIMIT = 5 * 1024 * 1024;
+
     private String readFile;
     private int readPos;
     private boolean stopped = false;
@@ -38,6 +36,8 @@ public class FileReaderChannel implements Task {
     private final QueueChannel queueChannel;
     private MappedByteBuffer readMappedByteBuffer;
     private FileChannel readFileChannel;
+
+    private QueueConfig queueConfig = QueueConfig.getInstance();
 
     public FileReaderChannel(QueueChannel queueChannel) {
         this.queueChannel = queueChannel;
@@ -96,13 +96,9 @@ public class FileReaderChannel implements Task {
         }
         while (!stopped) {
             openChannel();
-            if (Thread.interrupted() || stopped) {
-                return;
-            }
+            if (isStop()) { return; }
             loadFileData();
-            if (Thread.interrupted() || stopped) {
-                return;
-            }
+            if (isStop()) { return; }
             readNextFile();
         }
     }
@@ -147,7 +143,7 @@ public class FileReaderChannel implements Task {
      * get message length
      * @return  message length
      */
-    private int getHeader() {
+    private int getMessageLength() {
         return (readMappedByteBuffer.remaining() < 4) ? 0 : readMappedByteBuffer.getInt();
     }
 
@@ -158,8 +154,8 @@ public class FileReaderChannel implements Task {
         readMappedByteBuffer.position(readPos);
         int length;
 
-        while ((length = getHeader()) > 0 || dataFileManager.isEmpty()) {
-            if (Thread.interrupted() || stopped) {
+        while ((length = getMessageLength()) > 0 || dataFileManager.isEmpty()) {
+            if (isStop()) {
                 return;
             }
             //length<=0,position in the  one file has to be end, wait to write....
@@ -169,9 +165,9 @@ public class FileReaderChannel implements Task {
                 continue;
             }
             //Parse message length error, data format has broken, drop this file.
-            if (length > MESSAGE_HEADER_LENGTH_LIMIT) {
+            if (length > queueConfig.getMessageLimit()) {
                 while (dataFileManager.isEmpty()) {
-                    LogUtil.error("Parse message header error");
+                    LogUtil.error("Parse message header error. ");
                     SleepUtil.sleep(NO_DATA_WAIT_TIMEOUT);
                 }
                 return;
@@ -181,11 +177,9 @@ public class FileReaderChannel implements Task {
             }
         }
         // Process time window: When new file segment create, the last segment grow up.
-        int leftLength;
+        /*int leftLength;
         while ((leftLength = getHeader()) > 0) {
-            if (Thread.interrupted() || stopped) {
-                return;
-            }
+            if (isStop()) { return; }
             if (leftLength > MESSAGE_HEADER_LENGTH_LIMIT) {
                 LogUtil.error("Parse message header error, when process time window. ");
                 return;
@@ -193,11 +187,15 @@ public class FileReaderChannel implements Task {
             if (!messageBody(leftLength)) {
                 break;
             }
-        }
+        }*/
+    }
+
+    private boolean isStop() {
+        return (Thread.interrupted() || stopped);
     }
 
     private boolean messageBody(int length) {
-        if (length > MESSAGE_HEADER_LENGTH_LIMIT) {
+        if (length > queueConfig.getMessageLimit()) {
             readMappedByteBuffer.position(QueueConfig.getInstance().getQueueSegmentSize());
             LogUtil.error("Parse message header error, set position to the end. ");
             return false;

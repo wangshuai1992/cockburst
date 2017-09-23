@@ -12,6 +12,7 @@ public class QueueConfig {
 
     /**default size 100M*/
     private static final String QUEUE_SEGMENT_SIZE = "104857600";
+    private final static int MESSAGE_LENGTH_LIMIT = 5 * 1024 * 1024;
     private static final String CONFIG_FILE = "profiler.properties";
 
     private volatile boolean configured = false;
@@ -50,6 +51,10 @@ public class QueueConfig {
 
     public int getQueueSegmentSize() {
         return queueSegmentSize;
+    }
+
+    public int getMessageLimit(){
+        return MESSAGE_LENGTH_LIMIT;
     }
 
     public void setQueueSegmentSize(int queueSegmentSize) {

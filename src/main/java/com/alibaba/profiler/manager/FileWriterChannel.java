@@ -78,7 +78,7 @@ public class FileWriterChannel implements Task {
         }
     }
 
-    protected void checkWriteChannel(int messageSize) {
+    private void checkWriteChannel(int messageSize) {
         int rotationSize = QueueConfig.getInstance().getQueueSegmentSize();
         try {
             if (writeFileChannel == null) {
