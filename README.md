@@ -20,7 +20,7 @@ Queue.有线程安全的,非线程安全的,异步的去消费queue;这种作法
 可以使存储生产数据对业务系统的操作性能影响降到最低，又保证了数据的完整性和安全性。
 
 ### 如何使用
-
+使用起来也非常简单方便:
 * 在resources目录新建profiler.properties文件,在文件中定义两个属性:
 1. 队列文件data的存储目录;
 2. 索引文件meta的存储目录;
@@ -28,4 +28,7 @@ Queue.有线程安全的,非线程安全的,异步的去消费queue;这种作法
 com.alibaba.profiler.queue.PermanentQueue.take();其中offer()和
 take()的语义与blockqueue的语义是一样的;
 * 可参照测试用例使用;
+
+### 性能
+本地用自己的AIR测试了一下;100个线程连续写，TPS 50000/s,TP99 1ms ，TP999 8ms
 
