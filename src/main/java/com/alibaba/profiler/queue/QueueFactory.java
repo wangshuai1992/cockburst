@@ -38,7 +38,7 @@ public class QueueFactory {
 
     public AbstractQueue getQueue(String key) throws QueueException {
         if (isStopped()) {
-            throw new QueueException("QueueFactory has been destroyed.please reload");
+            throw new QueueException("QueueFactory has been destroyed.please restart");
         }
         try {
             FutureTask<AbstractQueue> queueHolder = queueHolders.get(key);
