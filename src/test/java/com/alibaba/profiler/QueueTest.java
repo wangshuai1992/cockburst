@@ -51,5 +51,18 @@ public class QueueTest {
             });
         }
 
+
+    }
+
+    public void testOffer() throws QueueException {
+        PermanentQueue.offer("category", "data1");
+    }
+
+    public void testPop() throws QueueException {
+        PermanentQueue.pop("category");
+    }
+
+    public void testTake() throws QueueException {
+        PermanentQueue.take("category");
     }
 }
