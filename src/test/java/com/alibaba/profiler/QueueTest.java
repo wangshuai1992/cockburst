@@ -20,14 +20,26 @@ public class QueueTest {
     private int poolSize;
     private int dataNums;
 
-
     public static void main(String[] args) {
-        QueueTest queueTest = new QueueTest("0923_7",10,100);
-        //queueTest.productTest();
-        queueTest.consumerTest();
+        //QueueTest queueTest = new QueueTest("0923_8", 100, 100000);
+        //queueTest.writePerformanceTest();
+        //queueTest.readPerformanceTest();
+
+        QueueTest queueTest = new QueueTest();
+        try {
+            queueTest.testOffer();
+            queueTest.testTake();
+            //queueTest.testPop();
+        } catch (QueueException e) {
+            e.printStackTrace();
+        }
+
     }
 
-    private void productTest() {
+    /**
+     * 写性能测试
+     */
+    private void writePerformanceTest() {
         ExecutorService productPool = Executors.newFixedThreadPool(poolSize);
         final CountDownLatch countDownLatch = new CountDownLatch(poolSize);
         final AtomicInteger allSum = new AtomicInteger();
@@ -46,11 +58,13 @@ public class QueueTest {
                         }
 
                     }
-                    countDownLatch.countDown();
+
                     allSum.addAndGet(sum);
                     System.out.println(
                         "Thread: " + Thread.currentThread().getName() + " 100000 data write take == " + (
                             System.currentTimeMillis() - start));
+                    countDownLatch.countDown();
+
                 }
             });
         }
@@ -64,7 +78,10 @@ public class QueueTest {
         System.out.println("Write sum == " + allSum.get());
     }
 
-    private void consumerTest() {
+    /**
+     * 写性能测试
+     */
+    private void readPerformanceTest() {
         ExecutorService consumersPool = Executors.newFixedThreadPool(poolSize);
         final CountDownLatch countDownLatch = new CountDownLatch(poolSize);
         final AtomicInteger allSum = new AtomicInteger();
@@ -108,16 +125,19 @@ public class QueueTest {
 
     public void testOffer() throws QueueException {
         PermanentQueue.offer("category", "data1");
+        System.out.println("Offer data1 to category");
     }
 
     public void testPop() throws QueueException {
-        PermanentQueue.pop("category");
+        String data = PermanentQueue.pop("category");
+        System.out.println("Pop data from category. data == " + data);
+
     }
 
     public void testTake() throws QueueException {
-        PermanentQueue.take("category");
+        String data = PermanentQueue.take("category");
+        System.out.println("Take data from category. data == " + data);
     }
-
 
     public String getQueueName() {
         return queueName;
@@ -149,5 +169,6 @@ public class QueueTest {
         this.dataNums = dataNums;
     }
 
-
+    public QueueTest() {
+    }
 }
