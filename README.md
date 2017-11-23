@@ -35,7 +35,7 @@
 * 直接调用com.alibaba.profiler.queue.PermanentQueue.offer()或者
 com.alibaba.profiler.queue.PermanentQueue.take();其中offer()和
 take()的语义与blockqueue的语义是一样的;
-* 可参照测试用例使用;
+* 可参照测试用例使用;com.alibaba.profiler.QueueTest#testOffer com.alibaba.profiler.QueueTest#testTake
 
 ### 性能
 本地用自己的电脑air测试了一下：同一个队列，100个线程连续写,每个线程写10W条数据，写的TPS 210W/s,  读的TPS 38W/s;
