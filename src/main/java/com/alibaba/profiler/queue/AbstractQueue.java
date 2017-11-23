@@ -60,22 +60,7 @@ public abstract class AbstractQueue implements Task {
         return data;
     }
 
-    public synchronized String pop(Handler handler) throws QueueException {
-        MessageWrapper messageWrapper = getByPop();
-        if (null == messageWrapper){
-            return null;
-        }
-        byte[] buff = messageWrapper.getContent();
-        if (buff.length <= 0) {
-            LogUtil.warn("Null message pop from the queue.");
-            return null;
-        }
 
-        String data = convertMessage(buff);
-        handler.handerData(data);
-        confirmLastMessage();
-        return data;
-    }
 
     public synchronized String take() throws QueueException {
         MessageWrapper messageWrapper = getByTake();
@@ -93,24 +78,6 @@ public abstract class AbstractQueue implements Task {
         confirmLastMessage();
         return data;
     }
-
-    public String take(Handler handler) throws QueueException {
-        MessageWrapper messageWrapper = getByTake();
-        if (null == messageWrapper){
-            return null;
-        }
-        byte[] buff = messageWrapper.getContent();
-        if (buff.length <= 0) {
-            LogUtil.warn("Null message take from the queue.");
-            return null;
-        }
-        String data = convertMessage(buff);
-        handler.handerData(data);
-        confirmLastMessage();
-        return data;
-    }
-
-
 
     private String convertMessage(byte[] buff) throws QueueException {
         String data;
