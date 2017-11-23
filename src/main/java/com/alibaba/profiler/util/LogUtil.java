@@ -2,7 +2,7 @@ package com.alibaba.profiler.util;
 
 
 /**
- * @author wxy on 16/6/4.
+ * @author wxy.
  */
 public class LogUtil {
 

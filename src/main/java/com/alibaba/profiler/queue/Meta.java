@@ -3,7 +3,7 @@ package com.alibaba.profiler.queue;
 import com.alibaba.profiler.util.CheckSum;
 
 /**
- * @author wxy on 16/6/4.
+ * @author wxy.
  */
 public class Meta {
     private volatile int readPos;

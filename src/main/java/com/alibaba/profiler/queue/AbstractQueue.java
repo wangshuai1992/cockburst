@@ -1,12 +1,11 @@
 package com.alibaba.profiler.queue;
 
-import com.alibaba.profiler.Handler;
 import com.alibaba.profiler.Task;
 import com.alibaba.profiler.exception.QueueException;
 import com.alibaba.profiler.util.LogUtil;
 
 /**
- * @author wxy on 16/6/4.
+ * @author wxy.
  */
 public abstract class AbstractQueue implements Task {
     protected final String queueName;

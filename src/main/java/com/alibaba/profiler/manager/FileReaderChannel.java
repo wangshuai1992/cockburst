@@ -21,7 +21,6 @@ import com.alibaba.profiler.util.SleepUtil;
  * Description:read data to cache queue
  *
  * @author wxy
- *         create 2017-05-14 下午10:31
  */
 public class FileReaderChannel implements Task {
     private final static int NO_DATA_WAIT_TIMEOUT = 2 * 1000;

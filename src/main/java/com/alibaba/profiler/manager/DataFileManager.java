@@ -11,7 +11,7 @@ import com.alibaba.profiler.config.QueueConfig;
 import com.alibaba.profiler.util.LogUtil;
 
 /**
- * @author wxy on 16/6/4.
+ * @author wxy
  */
 public class DataFileManager {
     private final String dataPath;

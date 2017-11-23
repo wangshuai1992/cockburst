@@ -3,7 +3,7 @@ package com.alibaba.profiler.queue;
 import com.alibaba.profiler.exception.QueueException;
 
 /**
- * @author wxy date 2017/04/26
+ * @author wxy.
  */
 public class PermanentQueue {
 

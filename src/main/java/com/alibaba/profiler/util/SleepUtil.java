@@ -3,7 +3,7 @@ package com.alibaba.profiler.util;
 import java.util.Random;
 
 /**
- * @author wxy on 16/6/4.
+ * @author wxy.
  */
 public class SleepUtil {
     public static void sleep(long msec) {
