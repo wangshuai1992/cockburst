@@ -9,10 +9,10 @@
 * xxxxxxxx.meta内容:offset(已消费当前数据块的偏移量)+消费当前数据块名称的长度+消费当前数据块名称（xxxxxxxx.data）+校验值（采用adler-32算法(offset+当前数据块名称)）
 * xxxxxxxx.data内容:(数据A长度+数据A内容)+(数据B长度+数据B内容)+...........
 
-![undefined](https://private-alipayobjects.alipay.com/alipay-rmsdeploy-image/skylark/png/d1889149-157c-4196-8c37-44f614b23ba0.png)
+![undefined](process/meta-data.png)
 
 ### 方案设计
-![undefined](https://private-alipayobjects.alipay.com/alipay-rmsdeploy-image/skylark/png/063bb1cc-c6f9-4dca-893a-f5b99bdfe0a0.png)
+![undefined](process/design.png)
 
 执行流程如下：
 * 系统启动第一次写，初始化队列：
