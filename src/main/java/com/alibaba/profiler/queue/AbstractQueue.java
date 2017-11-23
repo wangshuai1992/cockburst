@@ -32,6 +32,7 @@ public abstract class AbstractQueue implements Task {
 
     /**
      * take data
+     *
      * @return data
      */
     public abstract MessageWrapper getByTake();
@@ -42,9 +43,9 @@ public abstract class AbstractQueue implements Task {
      */
     public abstract void confirmLastMessage();
 
-    public String pop() throws QueueException {
+    public synchronized String pop() throws QueueException {
         MessageWrapper messageWrapper = getByPop();
-        if (null == messageWrapper){
+        if (null == messageWrapper) {
             return null;
         }
         byte[] buff = messageWrapper.getContent();
@@ -52,38 +53,33 @@ public abstract class AbstractQueue implements Task {
             LogUtil.warn("Null message pop from the queue.");
             return null;
         }
-
-        return convertMessage(buff);
-    }
-
-
-
-    public String pop(Handler handler) throws QueueException {
-        MessageWrapper messageWrapper = getByPop();
-        if (null == messageWrapper){
-            return null;
-        }
-        byte[] buff = messageWrapper.getContent();
-        if (buff.length <= 0) {
-            LogUtil.warn("Null message pop from the queue.");
-            return null;
-        }
-
-        String message;
-        try {
-            message = new String(buff, "UTF-8");
-        } catch (Exception e) {
-            confirmLastMessage();
-            throw new QueueException("Message conversion error occurred. ", e);
-        }
-        handler.handerData(message);
+        //bytes convert string
+        String data = convertMessage(buff);
+        //update meta
         confirmLastMessage();
-        return message;
+        return data;
     }
 
-    public String take() throws QueueException {
-        MessageWrapper messageWrapper = getByTake();
+    public synchronized String pop(Handler handler) throws QueueException {
+        MessageWrapper messageWrapper = getByPop();
         if (null == messageWrapper){
+            return null;
+        }
+        byte[] buff = messageWrapper.getContent();
+        if (buff.length <= 0) {
+            LogUtil.warn("Null message pop from the queue.");
+            return null;
+        }
+
+        String data = convertMessage(buff);
+        handler.handerData(data);
+        confirmLastMessage();
+        return data;
+    }
+
+    public synchronized String take() throws QueueException {
+        MessageWrapper messageWrapper = getByTake();
+        if (null == messageWrapper) {
             return null;
         }
         byte[] buff = messageWrapper.getContent();
@@ -91,7 +87,11 @@ public abstract class AbstractQueue implements Task {
             LogUtil.warn("Null message take from the queue.");
             return null;
         }
-        return convertMessage(buff);
+        //bytes convert string
+        String data = convertMessage(buff);
+        //update meta
+        confirmLastMessage();
+        return data;
     }
 
     public String take(Handler handler) throws QueueException {
@@ -104,27 +104,20 @@ public abstract class AbstractQueue implements Task {
             LogUtil.warn("Null message take from the queue.");
             return null;
         }
-
-        String message;
-        try {
-            message = new String(buff, "UTF-8");
-        } catch (Exception e) {
-            confirmLastMessage();
-            throw new QueueException("Message type conversion error occurred. ", e);
-        }
-        handler.handerData(message);
+        String data = convertMessage(buff);
+        handler.handerData(data);
         confirmLastMessage();
-        return message;
+        return data;
     }
 
+
+
     private String convertMessage(byte[] buff) throws QueueException {
-        String message;
+        String data;
         try {
-            message = new String(buff, "UTF-8");
-            confirmLastMessage();
-            return message;
+            data = new String(buff, "UTF-8");
+            return data;
         } catch (Exception e) {
-            confirmLastMessage();
             throw new QueueException("Message conversion error occurred. ", e);
         }
     }

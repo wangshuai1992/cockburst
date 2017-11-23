@@ -16,16 +16,12 @@ public class IpUtil {
         if (cacheLocalIp != null) {
             return cacheLocalIp;
         }
-        // 本地IP，如果没有配置外网IP则返回它
         String localIp = null;
-        // 外网IP
-        String netip = null;
         try {
 
             Enumeration<NetworkInterface> netInterfaces =
-                    NetworkInterface.getNetworkInterfaces();
-            InetAddress ip = null;
-            // 是否找到外网IP
+                NetworkInterface.getNetworkInterfaces();
+            InetAddress ip;
             boolean finded = false;
 
             while (netInterfaces.hasMoreElements() && !finded) {
@@ -34,16 +30,15 @@ public class IpUtil {
                 while (address.hasMoreElements()) {
                     ip = address.nextElement();
                     if (!ip.isSiteLocalAddress()
-                            && !ip.isLoopbackAddress()
-                            && ip.getHostAddress().indexOf(":") == -1) {// 外网IP
-                        netip = ip.getHostAddress();
+                        && !ip.isLoopbackAddress()
+                        && !ip.getHostAddress().contains(":")) {
                         finded = true;
                         break;
                     } else if (ip.isSiteLocalAddress()
 
-                            && !ip.isLoopbackAddress()
+                        && !ip.isLoopbackAddress()
 
-                            && ip.getHostAddress().indexOf(":") == -1) {// 内网IP
+                        && !ip.getHostAddress().contains(":")) {
                         localIp = ip.getHostAddress();
 
                     }
@@ -53,11 +48,7 @@ public class IpUtil {
         } catch (Exception e) {
             // Do Nothing
         }
-//        if (netip != null && !"".equals(netip)) {
-//            return netip;
-//        } else {
         cacheLocalIp = localIp;
         return localIp;
-//        }
     }
 }

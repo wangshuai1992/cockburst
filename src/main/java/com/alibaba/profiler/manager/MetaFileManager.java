@@ -50,10 +50,10 @@ public class MetaFileManager {
 
     private void loadMetaFromFile() {
         mbb.position(0);
-        int pos = (int) mbb.getLong();
+        int pos = (int)mbb.getLong();
         int len = mbb.getInt();
         if (len > MAX_META_LEN - 20) {
-            LogUtil.error("Incorrect meta content, reset it.");
+            LogUtil.error("Incorrect meta content, reset it. len == " + len);
             meta.set(0, null);
             return;
         }
@@ -89,7 +89,7 @@ public class MetaFileManager {
         mbb.position(0);
 
         byte[] bytes = fileName.getBytes(Charset.forName("UTF-8"));
-        mbb.putLong((long) meta.getReadPos());
+        mbb.putLong((long)meta.getReadPos());
         mbb.putInt(bytes.length);
         mbb.put(bytes);
         mbb.putLong(meta.getCheckSum());

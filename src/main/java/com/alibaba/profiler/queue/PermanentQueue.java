@@ -1,6 +1,5 @@
 package com.alibaba.profiler.queue;
 
-import com.alibaba.profiler.Handler;
 import com.alibaba.profiler.exception.QueueException;
 
 /**
@@ -29,10 +28,6 @@ public class PermanentQueue {
         return queueFactory.getQueue(queueCategory).pop();
     }
 
-    public static String pop(String queueCategory,Handler handler) throws QueueException {
-        return queueFactory.getQueue(queueCategory).pop(handler);
-    }
-
     /**
      *
      * @param queueCategory 队列名称
@@ -40,10 +35,6 @@ public class PermanentQueue {
      */
     public static String take(String queueCategory) throws QueueException {
         return queueFactory.getQueue(queueCategory).take();
-    }
-
-    public static String take(String queueCategory,Handler handler) throws QueueException {
-        return queueFactory.getQueue(queueCategory).take(handler);
     }
 
 }
