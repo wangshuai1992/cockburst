@@ -73,6 +73,7 @@ public class MetaFileManager {
     private void checkValidateMeta(int pos, String fileName, long ck) {
         long ck2 = CheckSum.adler32CheckSum(Meta.concat(pos, fileName));
         if (ck2 != ck) {
+            //第一次初始化队列时会提示,不用担心;
             LogUtil.warn("Incorrect check sum value " + ck + " != " + ck2 + ", reset it.");
             meta.set(0, null);
         } else {
