@@ -21,15 +21,19 @@ public class QueueTest {
     private int dataNums;
 
     public static void main(String[] args) {
+        /**读写性能测试*/
         //QueueTest queueTest = new QueueTest("0923_8", 100, 100000);
         //queueTest.writePerformanceTest();
         //queueTest.readPerformanceTest();
 
         QueueTest queueTest = new QueueTest();
         try {
+            //写测试
             queueTest.testOffer();
+            //take测试
             queueTest.testTake();
-            //queueTest.testPop();
+            //pop测试
+            queueTest.testPop();
         } catch (QueueException e) {
             e.printStackTrace();
         }

@@ -14,6 +14,7 @@ import com.alibaba.profiler.util.CheckSum;
 import com.alibaba.profiler.util.LogUtil;
 
 /**
+ * MetaFileManager
  * @author wxy.
  */
 public class MetaFileManager {
@@ -32,6 +33,11 @@ public class MetaFileManager {
         buildMeta();
     }
 
+    /**
+     * build meta channel instance
+     * 1. create meta channel
+     * 2. load meta info
+     */
     private void buildMeta() {
         File dir = new File(metaPath);
         if (!dir.exists() && !dir.mkdirs()) {
@@ -70,6 +76,12 @@ public class MetaFileManager {
         checkValidateMeta(pos, name, ck);
     }
 
+    /**
+     * check meta info
+     * @param pos 队列块的偏移量
+     * @param fileName  队列块文件名
+     * @param ck 校验值
+     */
     private void checkValidateMeta(int pos, String fileName, long ck) {
         long ck2 = CheckSum.adler32CheckSum(Meta.concat(pos, fileName));
         if (ck2 != ck) {

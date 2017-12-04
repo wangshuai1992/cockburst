@@ -17,6 +17,10 @@ import com.alibaba.profiler.queue.QueueChannel;
 import com.alibaba.profiler.util.LogUtil;
 
 /**
+ * FileWriterChannel
+ * include :
+ * 1. write data and persistence
+ * 2. force data to Disk
  * @author wxy.
  */
 public class FileWriterChannel implements Task {
@@ -42,6 +46,10 @@ public class FileWriterChannel implements Task {
         });
     }
 
+    /**
+     * write data
+     * @param message data
+     */
     public synchronized void write(String message) {
         try {
             byte[] cb = message.getBytes(Charset.forName("UTF-8"));
@@ -49,6 +57,7 @@ public class FileWriterChannel implements Task {
                 return;
             }
             int messageSize = 4 + cb.length;
+            //check data file has enough space
             checkWriteChannel(messageSize);
 
             writeMappedByteBuffer.putInt(cb.length);
@@ -60,6 +69,9 @@ public class FileWriterChannel implements Task {
         fileChannelQueue.getLatch().countDown();
     }
 
+    /**
+     * force data to disk
+     */
     private void asyncFlush() {
         while (!stopped) {
             try {
@@ -78,6 +90,11 @@ public class FileWriterChannel implements Task {
         }
     }
 
+    /**
+     * check data file has enough space
+     *
+     * @param messageSize
+     */
     private void checkWriteChannel(int messageSize) {
         int rotationSize = QueueConfig.getInstance().getQueueSegmentSize();
         try {

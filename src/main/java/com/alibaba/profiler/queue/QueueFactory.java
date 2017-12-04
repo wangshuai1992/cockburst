@@ -36,6 +36,19 @@ public class QueueFactory {
         private static final QueueFactory INSTANCE = new QueueFactory();
     }
 
+    /**
+     * get queue instance
+     *
+     * if(init){
+     *     return instance;
+     * }elseP{
+     *     create queue instance;
+     *     return instance;
+     * }
+     * @param key queue name
+     * @return queue instance
+     * @throws QueueException
+     */
     public AbstractQueue getQueue(String key) throws QueueException {
         if (isStopped()) {
             throw new QueueException("QueueFactory has been destroyed.please restart");
@@ -54,6 +67,9 @@ public class QueueFactory {
 
     }
 
+    /**
+     * init queue
+     */
     private static class QueueBuilder implements Callable<AbstractQueue> {
         private String queueName;
 
@@ -65,6 +81,7 @@ public class QueueFactory {
         public AbstractQueue call() {
             //init permanent queue
             AbstractQueue aq = new QueueChannel(queueName);
+            //start up all task
             aq.openQueue();
             return aq;
         }
