@@ -10,6 +10,7 @@ import com.alibaba.profiler.manager.MetaFileManager;
 import com.alibaba.profiler.util.LogUtil;
 
 /**
+ * queue definition
  * @author wxy.
  */
 public class QueueChannel extends AbstractQueue {

@@ -11,13 +11,20 @@ import com.alibaba.profiler.config.QueueConfig;
 import com.alibaba.profiler.util.LogUtil;
 
 /**
+ * DataFileManager
  * @author wxy
  */
 public class DataFileManager {
     private final String dataPath;
     private final String dataFileName;
     private final static String DATA_FILE_SUFFIX = ".data";
+    /**
+     * 队列所有的文件块
+     */
     private final TreeSet<String> files;
+    /**
+     * 已经消费过的队列文件块
+     */
     private final TreeSet<String> oldFiles;
 
     public DataFileManager(String queueName) {
@@ -28,6 +35,9 @@ public class DataFileManager {
         loadFiles();
     }
 
+    /**
+     * load data files
+     */
     private void loadFiles() {
         File dir = new File(dataPath);
         if (!dir.exists()) {
@@ -45,6 +55,10 @@ public class DataFileManager {
         }
     }
 
+    /**
+     * create new data file
+     * @return data file's name
+     */
     public synchronized String createRotationFile() {
         long count = 0;
         if (!files.isEmpty()) {

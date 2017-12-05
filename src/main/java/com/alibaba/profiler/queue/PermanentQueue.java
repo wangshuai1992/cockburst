@@ -10,7 +10,7 @@ public class PermanentQueue {
     private static QueueFactory queueFactory = QueueFactory.getInstance();
 
     /**
-     *
+     * write data to queue
      * @param queueCategory 队列名称
      * @param data 数据
      * @throws QueueException
@@ -20,7 +20,7 @@ public class PermanentQueue {
     }
 
     /**
-     *
+     * pop data from queue
      * @param queueCategory 队列名称
      * @throws QueueException
      */
@@ -29,7 +29,7 @@ public class PermanentQueue {
     }
 
     /**
-     *
+     * take data from queue
      * @param queueCategory 队列名称
      * @throws QueueException
      */
